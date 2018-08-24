@@ -1,6 +1,8 @@
 let axios = require('axios')
 let cheerio = require('cheerio')
 let options = {
+  method: 'GET',
+  url: 'https://house.0577home.net/search/page/4.html',
   headers: {
     Host: 'house.0577home.net',
     Pragma: 'no-cache',
@@ -28,7 +30,7 @@ function getAddress(text) {
   let execData = /\[(.+)\]/g.exec(text)
   return execData ? execData[1] : '无信息'
 }
-function parseHtml(arr) {
+function html(arr) {
   let houseInfo = []
   let $ = cheerio.load(arr)
   let info = $('#housesearchlist li')
@@ -60,23 +62,22 @@ function parseHtml(arr) {
   return houseInfo
 }
 async function init(page) {
-  let promiseArray = []
   let data
+  let promiseArray = []
   for (let i = 1; i <= page; i++) {
     promiseArray.push(
       fetchSinglePage(`https://house.0577home.net/search/page/${i}.html`)
     )
   }
   try {
-    let resArray = await Promise.all(promiseArray)
-    data = resArray.map(item => {
-      return parseHtml(item.data)
+    let dataArray = await Promise.all(promiseArray)
+    data = dataArray.map(item => {
+      return html(item.data)
     })
-  } catch (e) {
-    console.log(e)
+    console.log(data)
+  } catch (error) {
+    console.log(error)
   }
-  console.log('data', data)
-  return data
 }
 
-init(1)
+init(100)
